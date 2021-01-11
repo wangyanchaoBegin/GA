@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.renren.modules.ga.dao.GaDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="io.renren.modules.ga.entity.GaEntity" id="gaEntity">
+        <result property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="params" column="params"/>
+        <result property="state" column="state"/>
+        <result property="info" column="info"/>
+        <result property="createUser" column="create_user"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <!--        <result property="createUser" column="create_user"/>-->
+
+
+
+    <select id="listForPage" resultMap="gaEntity">
+        SELECT  *	FROM ga_task
+        <where>
+            <if test="id != null ">
+                AND  `id`= #{id}
+            </if>
+            <if test="name != null and name != '' ">
+                AND  name LIKE CONCAT('%', #{name},'%')
+            </if>
+
+
+
+            <if test="state != null ">
+                AND  `state`= #{state}
+            </if>
+
+            <if test="createUser != null and createUser != '' ">
+                AND `create_user`= #{createUser}
+            </if>
+
+            <if test="allFlag == null">
+                LIMIT #{pageSize} OFFSET #{pageIndex}
+            </if>
+
+        </where>
+        ORDER BY create_time DESC
+    </select>
+
+
+
+
+
+
+
+<!--    <if test="allFlag != null">-->
+<!--        LIMIT #{pageSize} OFFSET #{pageIndex}-->
+<!--    </if>-->
+
+    <!--            <if test="createFrom != null and createFrom!='' ">-->
+    <!--                <if test="createTo != null and createTo!='' ">-->
+    <!--                    AND (`date_create` &gt;= #{createFrom} AND `date_create` &lt;=	#{createTo})-->
+    <!--                </if>-->
+    <!--            </if>-->
+
+    <!--            <if test="createFrom != null and createFrom!='' ">-->
+    <!--                AND `date_create` &gt;= #{createFrom}-->
+    <!--            </if>-->
+
+    <!--            <if test="createTo != null and createTo!='' ">-->
+    <!--                AND `date_create` &lt;=	#{createTo}-->
+    <!--            </if>-->
+
+    <!--            <if test="consumeNumber != null and consumeNumber != '' ">-->
+    <!--                AND  consume_number LIKE CONCAT('%', #{consumeNumber},'%')-->
+    <!--            </if>-->
+
+
+
+    <!-- 算一下一共多少条
+     返回类型写的是integer可以么，前端的方法是int返回类型。
+     -->
+    <select id="countTotal" resultType="Integer">
+        SELECT   COUNT(*) 	FROM ga_task
+        <where>
+            <if test="id != null ">
+                AND  `id`= #{id}
+            </if>
+            <if test="name != null and name != '' ">
+                AND  name LIKE CONCAT('%', #{name},'%')
+            </if>
+
+            <if test="sameName != null and sameName != '' ">
+                AND  `name`= #{sameName}
+            </if>
+
+
+            <if test="state != null ">
+                AND  `state`= #{state}
+            </if>
+
+            <if test="createUser != null and createUser != '' ">
+                AND `create_user`= #{createUser}
+            </if>
+
+        </where>
+    </select>
+
+
+
+    <select id="getGaEntity" resultMap="gaEntity">
+        SELECT  *	FROM ga_task where  `id`= #{id} ;
+    </select>
+
+    <insert id="save" parameterType="io.renren.modules.ga.entity.GaEntity">
+      insert into ga_task(
+          name,
+          params,
+          state,
+          info,
+          create_time,
+          create_user
+      )
+      values(
+        #{name},
+        #{params},
+        #{state},
+        #{info},
+        #{createTime},
+        #{createUser}
+      )
+    </insert>
+
+<!--    Integer batchSave(List<GaEntity> gaEntityList);-->
+
+
+
+<!--    <insert id="add" parameterType="EStudent">-->
+<!--        <foreach collection="list" item="item" index="index" separator=";">-->
+<!--            INSERT INTO TStudent(name,age) VALUES(#{item.name}, #{item.age})-->
+<!--        </foreach>-->
+<!--    </insert>-->
+
+
+    <insert id="batchSave" parameterType="io.renren.modules.ga.entity.GaEntity">
+        insert into ga_task(
+            name,
+            params,
+            state,
+            info,
+            create_time,
+            create_user
+        )
+        values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.name},
+            #{item.params},
+            #{item.state},
+            #{item.info},
+            #{item.createTime},
+            #{item.createUser})
+        </foreach>
+    </insert>
+
+
+
+    <update id="update" parameterType="io.renren.modules.ga.entity.GaEntity">
+        update ga_task
+        <set>
+            <if test="name != null and name != ''">name = #{name},</if>
+            <if test="state != null and state != ''">state = #{state},</if>
+            <if test="params != null and params != ''">params = #{params},</if>
+            <if test="info != null and info != ''">info = #{info},</if>
+            <if test="updateTime != null">update_time = #{updateTime}</if>
+        </set>
+        where id=#{id}
+    </update>
+
+
+
+<!--    open="(" close=")"-->
+
+<!--    Integer batchDelete(List<Long> ids);-->
+
+<!--    int deleteByBatch(String[] array);-->
+<!--    <delete id="deleteByBatch" parameterType="java.lang.String">-->
+<!--        delete from t_enterprise_output_value-->
+<!--        where OUTPUT_ID IN-->
+<!--        <foreach collection="array" item="outputId" open="(" separator="," close=")">-->
+<!--            #{outputId}-->
+<!--        </foreach>-->
+<!--    </delete>-->
+
+    <delete id="batchDelete" parameterType="java.lang.Long">
+        delete from ga_task
+        where id IN
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+
+</mapper>
